@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L2 Sim-Racing Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+html,body{margin:0}
+
+/* Layout: one 1920x1080 slide at a time, scaled to fit, with a slim control bar below. Single dark look by choice. */
+:root{
+  --ground:#0b0c0e; --bar:#141619; --line:#2a2d32; --ink:#f2efe6; --muted:#8f8b82; --accent:#ffce00;
+  --display:'Oswald', 'Arial Narrow', sans-serif; --body:'Public Sans', Arial, sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);overflow:hidden;padding-inline:0}
+.app{height:100%;display:flex;flex-direction:column}
+.stage{flex:1;min-height:0;position:relative;overflow:hidden}
+.deck{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;box-sizing:border-box;overflow:hidden;opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}
+.slide.on{opacity:1;visibility:visible;transition:opacity .35s ease}
+.slide *{box-sizing:border-box}
+.slide h1,.slide h2,.slide h3,.slide p,.slide ul,.slide ol,.slide table{margin:0}
+.slide h1{font-size:96px;font-weight:600;line-height:1.1}
+.slide h2{font-size:64px;font-weight:600;line-height:1.15;text-wrap:balance}
+.slide h3{font-size:44px;font-weight:600;line-height:1.2}
+.slide p{font-size:32px;line-height:1.4}
+.slide table{border-collapse:collapse}
+.slide img,.slide video{display:block;max-width:none}
+.slide .arrow{clip-path:polygon(0 30%,60% 30%,60% 0,100% 50%,60% 100%,60% 70%,0 70%)}
+.notes{display:none}
+.bar{flex:none;display:flex;align-items:center;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bar);border-top:1px solid var(--line)}
+.bar .name{font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.bar button{font:600 13px var(--body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px 12px;cursor:pointer}
+.bar button:hover{border-color:var(--accent)}
+.bar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar button[aria-pressed="true"]{background:var(--accent);color:#141619;border-color:var(--accent)}
+.count{font:600 14px var(--body);font-variant-numeric:tabular-nums;color:var(--ink);min-width:64px;text-align:center}
+.progress{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);transition:width .3s}
+.notesbox{flex:none;max-height:28vh;overflow:auto;padding:12px 16px;background:var(--bar);border-top:1px solid var(--line);color:#c9c5ba;font-size:15px;line-height:1.5}
+.notesbox[hidden]{display:none}
+@media (max-width:600px){.bar .name{display:none}.bar{justify-content:center}}
+@media (prefers-reduced-motion:reduce){.slide,.slide.on,.progress{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <div class="stage" id="stage">
+    <div class="deck" id="deck">
+<section class="slide" id="cover" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:40px">
+<video src="media/brakemap.mp4" poster="media/brakemap_still.jpg" muted loop playsinline preload="auto" aria-label="Momentum Delta corner map with the braking line painted on the Nordschleife" style="position:absolute;left:880px;top:0px;width:1040px;height:1080px;object-fit:cover"></video>
+<div style="position:absolute;left:868px;top:0px;width:12px;height:1080px;background:#ffce00"></div>
+<p style="font-family:Oswald, sans-serif;font-size:28px;font-weight:500;letter-spacing:4px;color:#ffce00;width:700px">FOR THE SIM-RACING COMMUNITY</p>
+<h1 style="font-family:Oswald, sans-serif;font-size:104px;font-weight:700;line-height:1.0;width:700px">The L2 Sim-Racing Platform</h1>
+<p style="font-size:32px;line-height:1.4;color:#c9c5ba;width:680px">The next-generation sim-racing platform: streamline your racing life, supercharge performance with AI coaching, and empower communities with real-world monetization.</p>
+<p style="font-size:24px;color:#8f8b82;width:680px">Lukasz Gorycki · gorycki.lukasz@gmail.com</p>
+<aside class="notes">Every screen and clip in this deck comes from software that runs today. The background clip is the Momentum Delta braking-point map: pick a corner, teleport to it, and the reference braking line is painted on the track.</aside>
+</section>
+<section class="slide" id="challenges" data-transition="fade" style="background:#f2efe6;color:#17191c;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:20px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#b84400">WHY NOW</p>
+<h2 style="font-family:Oswald, sans-serif;font-size:60px;font-weight:600;line-height:1.15;width:1600px">Sim racing has never been more popular, yet the experience is fragmented. <span style="color:#b84400">Fragmented communities have no power.</span></h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:14px;background:#ffffff;padding:32px;border-top:8px solid #ff6000;border-radius:8px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;color:#b84400">01</p>
+<h3 style="font-size:32px;font-weight:700;line-height:1.2">Drivers drift when a title fades</h3>
+<p style="font-size:24px;line-height:1.4;color:#4a4d52">As ACC's peak passes, grids thin out and players scatter.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#ffffff;padding:32px;border-top:8px solid #ff6000;border-radius:8px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;color:#b84400">02</p>
+<h3 style="font-size:32px;font-weight:700;line-height:1.2">No subscription worth keeping</h3>
+<p style="font-size:24px;line-height:1.4;color:#4a4d52">No recurring model drivers happily pay for.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#ffffff;padding:32px;border-top:8px solid #ff6000;border-radius:8px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;color:#b84400">03</p>
+<h3 style="font-size:32px;font-weight:700;line-height:1.2">A community in pieces</h3>
+<p style="font-size:24px;line-height:1.4;color:#4a4d52">A dozen launchers, apps and Discords; liveries never sync.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#ffffff;padding:32px;border-top:8px solid #ff6000;border-radius:8px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;color:#b84400">04</p>
+<h3 style="font-size:32px;font-weight:700;line-height:1.2">One rating, no rival</h3>
+<p style="font-size:24px;line-height:1.4;color:#4a4d52">iRating is the only recognised skill measure, inside one sim.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7a766d">L2 Sim-Racing Platform · 02</p>
+<aside class="notes">The answer: one web-based ecosystem for AC, EVO, AMS2, RaceRoom and other major sims, with AI coaching, open telemetry, real-world monetization and community tools.</aside>
+</section>
+<section class="slide" id="platform" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:64px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<img src="media/portal_full.jpg" alt="Portal home: platform bar, navigation, people, paddock feed, chat, threads, live communities and leaderboards" style="position:absolute;left:160px;top:170px;width:1600px;height:755px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:600;line-height:1.1">One web home across every sim</h2>
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">1 · OPEN PLATFORM</p>
+</div>
+<p style="position:absolute;left:178px;top:288px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">1</p>
+<p style="position:absolute;left:468px;top:164px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">2</p>
+<p style="position:absolute;left:338px;top:238px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">3</p>
+<p style="position:absolute;left:560px;top:208px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">4</p>
+<p style="position:absolute;left:740px;top:164px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">5</p>
+<p style="position:absolute;left:1600px;top:196px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">6</p>
+<p style="position:absolute;left:1700px;top:368px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">7</p>
+<p style="position:absolute;left:1640px;top:659px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">8</p>
+<p style="position:absolute;left:300px;top:556px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">9</p>
+<p style="position:absolute;left:480px;top:620px;width:44px;height:44px;border-radius:50%;background:#ffce00;color:#141619;font-size:24px;font-weight:700;text-align:center;line-height:1.8;border:2px solid #141619">10</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">The portal home in cross-platform mode, three communities merged · numbers explained on the next slide · 03</p>
+<aside class="notes">1 platform bar, 2 cross-platform mode, 3 navigation, 4 paddock feed, 5 live count of sim racers on Steam, 6 threads, 7 live communities, 8 leaderboards, 9 people, 10 chat and conference room. Details on the next slide.</aside>
+</section>
+<section class="slide" id="platform-key" data-transition="fade" style="background:#1f2226;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<h2 style="font-family:Oswald, sans-serif;font-size:64px;font-weight:600;line-height:1.1">What is on the home screen</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px 64px">
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>1  Platform bar</b></span> · AC, EVO, AMS2, iRacing, RaceRoom, LMU, BeamNG and F1 in one switcher</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>6  Threads</b></span> · team and league conversations, e.g. who takes the second stint at Spa</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>2  Cross-platform mode</b></span> · three sim communities merged into one view</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>7  Live communities</b></span> · EVO, AMS2 and AC competitive hubs side by side</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>3  Navigation</b></span> · launcher, app marketplace, merchandise, Grid Radio, Garage, Livery Studio, Momentum Delta</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>8  Leaderboards</b></span> · F1 race and season, AMS2, AC, RaceRoom, F1 24 and F1 25</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>4  Paddock feed</b></span> · news from every sim in one stream, with a post button for the community</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>9  People</b></span> · who is online, cruising or idle, and in which sim or track</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>5  Live Steam count</b></span> · sim racers playing on Steam right now, across titles</p>
+<p style="font-size:26px;line-height:1.4;color:#c9c5ba"><span style="color:#ffce00"><b>10  Chat</b></span> · general chat and a conference room, private messages marked personal</p>
+</div>
+<p style="font-size:28px;line-height:1.4;color:#f2efe6;width:1600px"><b>Universal web experience:</b> manage your racing schedule, servers and sessions from a fast, customizable web interface.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">L2 Sim-Racing Platform · 04</p>
+<aside class="notes">Walk through the numbers on the previous screenshot. The count of sim racers on Steam is live, read from Steam's public player numbers for the sim titles.</aside>
+</section>
+<section class="slide" id="launcher" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:64px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<img src="media/mpl.jpg" alt="MPL for Assetto Corsa: detected games, car and livery picker, track, server join with saved car and setup, screen settings" style="position:absolute;left:128px;top:170px;width:905px;height:744px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:600;line-height:1.1">MPL: the Multi Platform Launcher</h2>
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">1 · OPEN PLATFORM</p>
+</div>
+<div style="position:absolute;left:1073px;top:170px;width:719px;display:flex;flex-direction:column;gap:22px">
+<p style="font-size:28px;line-height:1.4;color:#f2efe6"><b>One web launcher instead of a dozen game-specific ones.</b></p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Finds your sims</b></span> · Assetto Corsa, AMS2 and RaceRoom, plus Steam, CSP and Pure, checked on start</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Car, livery, track</b></span> · search the whole library, pick a livery from its preview, press Drive</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Join any server</b></span> · paste a join link; MPL reads the game port, track, allowed cars and free seats</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Remembers each server</b></span> · last car, livery, setup, driver name and password are set for you</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>No file-syncing friction</b></span> · liveries and setups are in place before you join</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">MPL for Assetto Corsa, joining a Nordschleife Touristenfahrten server · 05</p>
+<aside class="notes">Screen and graphics settings sit on the same page. Practice and Join server are one click apart; the server decides weather and time when you join.</aside>
+</section>
+<section class="slide" id="agents" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">1 · OPEN PLATFORM</p>
+<h2 style="font-family:Oswald, sans-serif;font-size:64px;font-weight:600;line-height:1.1">An open marketplace for creators and L2 agents</h2>
+<p style="font-size:28px;line-height:1.45;color:#c9c5ba;width:1620px">The model has massive precedents outside racing: CurseForge and Nexus Mods, central hubs where creators monetize assets, code and mods for a percentage split.</p>
+<div style="display:flex;gap:28px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1f2226;padding:32px;border-top:6px solid #ffce00;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700">Open toolsets</h3>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba">Apps, integrations and race-ops agents built by the community.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1f2226;padding:32px;border-top:6px solid #ffce00;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700">L2 agents</h3>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba">Layer-2 autonomous sim-racing tech, open to every developer.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1f2226;padding:32px;border-top:6px solid #ff6000;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700">Low-fee payouts</h3>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba">Transparent splits over an Optimism L2 crypto/fiat bridge.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1f2226;padding:32px;border-top:6px solid #ff6000;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700">IP respected</h3>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba">Creators keep ownership; files sync without friction.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">L2 Sim-Racing Platform · 06</p>
+<aside class="notes">Developers and creators flock to any platform that respects intellectual property, offers low-fee payouts and solves file-syncing friction. Monetize anything: even low-volume, niche community servers and individual players can earn from coaching and events.</aside>
+</section>
+<section class="slide" id="telemetry" data-transition="fade" style="background:#f2efe6;color:#17191c;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#b84400">1 · OPEN TELEMETRY SOURCE</p>
+<h2 style="font-family:Oswald, sans-serif;font-size:64px;font-weight:600;line-height:1.1">An open telemetry and competitive tooling hub</h2>
+<p style="font-size:28px;line-height:1.45;color:#4a4d52;width:1620px">The template is proven: OP.GG, DotaBuff, Racelab, TrackTitan. We reproduce it with far higher-class data for the Nordschleife, open to all, not locked in closed repositories.</p>
+<div style="display:flex;gap:20px;align-items:center">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#141619;color:#f2efe6;padding:28px 32px;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Raw data</h3>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba">Laps from players, servers and fast drivers' videos</p>
+</div>
+<div class="arrow" style="flex:none;width:64px;height:40px;background:#ff6000"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#141619;color:#f2efe6;padding:28px 32px;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Analytical layers</h3>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba">Each tuned to one part of racecraft</p>
+</div>
+<div class="arrow" style="flex:none;width:64px;height:40px;background:#ff6000"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#141619;color:#f2efe6;padding:28px 32px;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Actionable metrics</h3>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba">Share, copy and auto-promote improvement</p>
+</div>
+</div>
+<div style="display:flex;gap:28px">
+<p style="flex:1;font-size:26px;line-height:1.45;background:#ffffff;padding:24px 32px;border-left:6px solid #ff6000;border-radius:8px"><b>The server</b> receives free data.</p>
+<p style="flex:2;font-size:26px;line-height:1.45;background:#ffffff;padding:24px 32px;border-left:6px solid #ff6000;border-radius:8px"><b>The player</b> receives recognition and a status change, with a clear threshold for skill monetization: a strong churn moderator.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7a766d">L2 Sim-Racing Platform · 07</p>
+<aside class="notes">Fast drivers rarely use the major telemetry platforms, apart from closed repositories such as iRacing's and Garage61. Momentum Delta's video extraction turns their public lap videos into reference laps. Players do not just want to play; they want to prove their improvement.</aside>
+</section>
+<section class="slide" id="md-coach" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:64px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<img src="media/wholelap_full.jpg" alt="Whole-lap comparison: racing line, track limits and momentum against a reference lap" style="position:absolute;left:128px;top:170px;width:1220px;height:744px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:600;line-height:1.1">Momentum Delta: the Nordschleife AI coach</h2>
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">2 · MOMENTUM DELTA</p>
+</div>
+<div style="position:absolute;left:1392px;top:170px;width:400px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:26px;line-height:1.45;color:#d6d2c7">Stop guessing where you are losing time. Multiple visual technologies in one performance briefing.</p>
+<p style="font-size:26px;line-height:1.45;color:#d6d2c7">Corner-to-corner commentary, comparisons against your previous bests, and overlays against teammates or record holders.</p>
+<p style="font-size:26px;line-height:1.45;color:#d6d2c7">Focused on momentum delta and slow-corner mastery: speed <span style="color:#5fd068">carried</span>, <span style="color:#ffce00">slipping</span> or <span style="color:#ff7a5c">lost</span>.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">Whole-lap view of the web coach · own lap 6:08.7 against Nets, Porsche RSR 6:02.3 (MoTeC) · 08</p>
+<aside class="notes">Top: racing line against the reference inside the white lines. Middle: track limits, metres from the car to the nearest white line. Bottom: momentum, green carried within 2 km/h, amber slipping, red lost by 8 km/h or more; dots are the corner apexes. The text under the charts reads out the value at the cursor.</aside>
+</section>
+<section class="slide" id="md-line" data-transition="fade" style="background:#1f2226;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:64px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<img src="media/rl_zoom2.jpg" alt="Zoomed view from Hohe Acht to Wippermann: racing line, track limits and momentum, you against the reference" style="position:absolute;left:128px;top:170px;width:1077px;height:744px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:600;line-height:1.1">The track, straightened out</h2>
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">2 · MOMENTUM DELTA</p>
+</div>
+<div style="position:absolute;left:1237px;top:170px;width:555px;display:flex;flex-direction:column;gap:20px">
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Whole lap</h3>
+<img src="media/rl_whole.jpg" alt="Racing line chart for the whole lap" style="width:555px;height:112px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba">Black is the tarmac between the white lines. The strip bends up where the track turns left and down where it turns right.</p>
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Zoomed in, left</h3>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba">Hohe Acht to Wippermann: your line in white against the reference in green, metre by metre, with track limits and momentum on the same distance axis.</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba">Every lap is calibrated onto the track map before it is compared.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">A new way to read a racing line · pick a corner or use Zoom in · 09</p>
+<aside class="notes">On a map of the whole loop, a metre of difference is invisible. Straightening the track keeps its width readable at any zoom, so line, limits and speed carried line up corner by corner.</aside>
+</section>
+<section class="slide" id="md-video" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:600;line-height:1.1">In the car: corner briefings and braking map</h2>
+<div style="display:flex;gap:48px;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:16px">
+<video src="media/corner.mp4" poster="media/corner_still.jpg" muted loop playsinline preload="auto" aria-label="Corner card for Tiergarten posted to chat with its clip" style="width:528px;height:620px;object-fit:contain;background:#0d0e10;border-radius:8px"></video>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba;width:528px">Brake point, pressure, entry and apex speed per corner, posted to chat with a clip.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<video src="media/brakemap.mp4" poster="media/brakemap_still.jpg" muted loop playsinline preload="auto" aria-label="Braking-point map: teleport to a corner and see the braking line painted on track" style="width:1083px;height:620px;object-fit:contain;background:#0d0e10;border-radius:8px"></video>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba;width:1083px">Pick a corner on the map, teleport to it, and the reference braking line is painted on the track.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">Screen recordings from the in-game app, Assetto Corsa · 10</p>
+<aside class="notes">Both clips play while the slide is presented; click a clip to pause it.</aside>
+</section>
+<section class="slide" id="md-tools" data-transition="fade" style="background:#1f2226;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:64px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<img src="media/telextr_full.jpg" alt="Telemetry extraction tab: reading agents and channel quality" style="position:absolute;left:128px;top:170px;width:613px;height:744px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<img src="media/anticheat_full.jpg" alt="Anticheat monitor: live checks, session values, history and downforce" style="position:absolute;left:773px;top:170px;width:498px;height:744px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:600;line-height:1.1">Telemetry from video, fair play by default</h2>
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">2 · MOMENTUM DELTA</p>
+</div>
+<div style="position:absolute;left:1311px;top:170px;width:481px;display:flex;flex-direction:column;gap:24px">
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Telemetry extraction</h3>
+<p style="font-size:24px;line-height:1.45;color:#d6d2c7">Turns a lap video into a telemetry file. Reading agents for speed, pedals, gear and steering, each checked, with a quality score per channel.</p>
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Anticheat monitor</h3>
+<p style="font-size:24px;line-height:1.45;color:#d6d2c7">Always on while the app runs: air density, grip, tyre temperatures, FFB clipping, phantom brake and downforce, archived per session.</p>
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Open references</h3>
+<p style="font-size:24px;line-height:1.45;color:#d6d2c7">Fast laps that exist only as videos become reference laps for everyone.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">In-game tabs: Tel Extr and Anticheat · 11</p>
+<aside class="notes">The telemetry screenshot is an honest read-out: braking and throttle at 100 percent input, shape around 90 percent, and gear and timing still weak on that video's HUD. The anticheat history shows every archived session with its flags.</aside>
+</section>
+<section class="slide" id="sub6" data-transition="fade" style="background:#ffce00;color:#17191c;font-family:'Public Sans', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<img src="media/stats_full.jpg" alt="Nordschleife records per car, fastest GT laps, most distance and top record holders" style="position:absolute;left:1250px;top:96px;width:542px;height:744px;object-fit:contain;background:#141619;border-radius:8px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#5c4a00;width:1060px">3 · SUB 6</p>
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:700;line-height:1.1;width:1060px">Nordschleife School of Sim-Racing</h2>
+<div style="display:flex;gap:32px;align-items:center;width:1060px">
+<p style="font-family:Oswald, sans-serif;font-size:96px;font-weight:700;line-height:1.0;background:#141619;color:#ffce00;padding:16px 32px;border-radius:8px">$0.99</p>
+<p style="flex:1;font-size:28px;line-height:1.4">Subscriptions start at <b>$0.99</b>. Players don't just want to play; they want to prove they are improving.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;width:1060px">
+<div style="display:flex;flex-direction:column;gap:6px;background:#141619;color:#f2efe6;padding:24px 32px;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Momentum Delta AI coach</h3>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba">Corner-to-corner commentary and overlays against record holders.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#141619;color:#f2efe6;padding:24px 32px;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Skill monetization</h3>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba">Pass a clear threshold and start earning: fast drivers coach, mentor and sell laps.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#141619;color:#f2efe6;padding:24px 32px;border-radius:8px">
+<h3 style="font-size:30px;font-weight:700;color:#ffce00">Human + AI, plus events</h3>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba">The AI handles the data; people teach, race and build community together.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5c4a00">Skill monetization and subscription model · in-game Stats tab, right · 12</p>
+<aside class="notes">Low entry barrier: from 0.99 dollars. Right: the in-game records board, best lap per car on the Nordschleife, fastest GT laps of the last 30 days, most distance and top record holders.</aside>
+</section>
+<section class="slide" id="livery" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:64px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<img src="media/livery.jpg" alt="Livery Studio: car picker and ten Porsche 911 RSR paint schemes, each at $0.99" style="position:absolute;left:128px;top:170px;width:1125px;height:744px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:600;line-height:1.1">Livery Studio</h2>
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">4 · LIVERY STUDIO</p>
+</div>
+<div style="position:absolute;left:1285px;top:170px;width:507px;display:flex;flex-direction:column;gap:22px">
+<p style="font-size:28px;line-height:1.4"><b>Create stunning designs in the browser, without the hassle.</b></p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Ready schemes</b></span> · paint schemes from $0.99, built and installed straight into the game</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Full control</b></span> · paint, fender wording, wheels, roof QR code, windscreen banner, driver</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Marketing spaces</b></span> · every sponsor space mapped on the car in 3D</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Clean by design</b></span> · invented sponsors and flags, no copyrighted real-world logos</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">Porsche 911 RSR and Mercedes-AMG GT3 for Assetto Corsa today · 13</p>
+<aside class="notes">Header of the studio lists 55 marketing spaces, 22 paint schemes, 137 decals, 8 invented sponsors and 42 flags. Output formats for AC, EVO, AMS2, RaceRoom and iRacing are the multi-format goal on the next slide.</aside>
+</section>
+<section class="slide" id="livery-slots" data-transition="fade" style="background:#f2efe6;color:#17191c;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#b84400">4 · LIVERY STUDIO</p>
+<h2 style="font-family:Oswald, sans-serif;font-size:64px;font-weight:600;line-height:1.1">One livery, every sim, every driver</h2>
+<div style="display:flex;gap:24px;align-items:center">
+<div style="width:420px;display:flex;flex-direction:column;gap:12px;background:#141619;color:#f2efe6;padding:36px;border-radius:8px">
+<h3 style="font-size:32px;font-weight:700;color:#ffce00">Master template</h3>
+<p style="font-size:24px;line-height:1.4;color:#c9c5ba">The team designs once, with fully customizable layers.</p>
+</div>
+<div class="arrow" style="flex:none;width:72px;height:48px;background:#ff6000"></div>
+<div style="width:520px;display:flex;flex-direction:column;gap:12px;background:#ffffff;padding:36px;border-radius:8px;border:2px solid #17191c">
+<h3 style="font-size:32px;font-weight:700">JSON slot configuration</h3>
+<p style="font-size:24px;line-height:1.5;color:#4a4d52">driver name · flag · number<br>decals · sponsors · colours</p>
+</div>
+<div class="arrow" style="flex:none;width:72px;height:48px;background:#ff6000"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#141619;color:#f2efe6;padding:36px;border-radius:8px">
+<h3 style="font-size:32px;font-weight:700;color:#ffce00">Multi-format output</h3>
+<p style="font-size:24px;line-height:1.5;color:#c9c5ba">AC · EVO · AMS2<br>RaceRoom · iRacing</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.45;color:#4a4d52;width:1560px">Alternative distribution: a league ships one master template and a small slot file per driver, not one heavy skin per car per sim. MPL puts the right livery in place when the driver joins.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7a766d">L2 Sim-Racing Platform · 14</p>
+<aside class="notes">Full customization per driver, name, flag, decals and sponsors, from one shared design.</aside>
+</section>
+<section class="slide" id="score" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">5 · OPEN DRIVER SCORE</p>
+<h2 style="font-family:Oswald, sans-serif;font-size:64px;font-weight:600;line-height:1.1">Cross-platform competition, open ranking</h2>
+<table style="width:1664px;font-size:28px;border-collapse:collapse">
+<tr><th style="text-align:left;padding:18px 24px;color:#8f8b82;font-weight:600;border-bottom:2px solid #3a3e44"></th><th style="text-align:left;padding:18px 24px;color:#8f8b82;font-weight:600;border-bottom:2px solid #3a3e44">iRating</th><th style="text-align:left;padding:18px 24px;color:#ffce00;font-weight:700;border-bottom:2px solid #3a3e44">Open Driver Score</th></tr>
+<tr><td style="padding:18px 24px;font-weight:700;border-bottom:1px solid #2c3035">Formula</td><td style="padding:18px 24px;color:#c9c5ba;border-bottom:1px solid #2c3035">Owned by one company</td><td style="padding:18px 24px;border-bottom:1px solid #2c3035">Open format, managed by the community</td></tr>
+<tr><td style="padding:18px 24px;font-weight:700;border-bottom:1px solid #2c3035">Platforms</td><td style="padding:18px 24px;color:#c9c5ba;border-bottom:1px solid #2c3035">One sim</td><td style="padding:18px 24px;border-bottom:1px solid #2c3035">Every sim, one score</td></tr>
+<tr><td style="padding:18px 24px;font-weight:700;border-bottom:1px solid #2c3035">Changes</td><td style="padding:18px 24px;color:#c9c5ba;border-bottom:1px solid #2c3035">Decided by the owner</td><td style="padding:18px 24px;border-bottom:1px solid #2c3035">Open voting system</td></tr>
+<tr><td style="padding:18px 24px;font-weight:700">Leagues</td><td style="padding:18px 24px;color:#c9c5ba">Inside its own service</td><td style="padding:18px 24px">Hybrid league: real and virtual merged</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.45;color:#c9c5ba;width:1640px"><span style="color:#ffce00"><b>DAO governance:</b></span> community-voted moderation and server funding instead of corporate-controlled forums. Open voting and transparent value-sharing build lasting loyalty.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">L2 Sim-Racing Platform · 15</p>
+<aside class="notes">Leagues, content creators and server hosts get a tool for online competition across platforms, with one score that follows the driver from sim to sim.</aside>
+</section>
+<section class="slide" id="radio" data-transition="fade" style="background:#1f2226">
+  <p id="e1-1ccjf04" style="position:absolute; bottom:64px; left:128px; width:1664px; font-family:'Public Sans', Arial, sans-serif; font-size:24px; color:#8f8b82">L2 Sim-Racing Platform · 16</p>
+  <p id="p5ca8e8bf1e79r0-d163fa91" style="position:absolute; top:128px; left:128px; width:1664px; font-family:Oswald, sans-serif; font-size:28px; letter-spacing:4px; color:#ffce00">6 · GRID RADIO</p>
+  <h2 id="p5ca8e8bf1e79r1-d163fa91" style="position:absolute; top:167.2px; left:128px; width:1600px; font-family:Oswald, sans-serif; font-size:64px; font-weight:600; line-height:1.1; color:#f2efe6">The voice of the community</h2>
+  <p id="p5ca8e8bf1e79r2-d163fa91" style="position:absolute; top:310px; left:128px; width:1600px; font-family:'Public Sans', Arial, sans-serif; font-size:28px; line-height:1.45; color:#c9c5ba">Sim-racing media usually covers only the podium finishers. Grid Radio changes the script: opportunities to monetize skill, upcoming talent, and promotion for drivers, teams, leagues and creators.</p>
+  <div id="p5ca8e8bf1e79r3-d163fa91" style="position:absolute; top:427px; left:128px; width:1664px; height:240px; display:flex; flex-direction:row; gap:32px">
+    <div style="display:flex; flex-direction:column; gap:14px; flex:1; padding:36px; background:#141619; border-top:6px solid #ff6000; border-radius:8px">
+      <h3 style="font-family:'Public Sans', Arial, sans-serif; font-size:32px; font-weight:700; color:#f2efe6">Trained on telemetry</h3>
+      <p style="font-family:'Public Sans', Arial, sans-serif; font-size:25px; line-height:1.45; color:#c9c5ba">An autonomous podcast built on Nordschleife telemetry and an F1 telemetry database.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px; flex:1; padding:36px; background:#141619; border-top:6px solid #ff6000; border-radius:8px">
+      <h3 style="font-family:'Public Sans', Arial, sans-serif; font-size:32px; font-weight:700; color:#f2efe6">News agent and podcasts</h3>
+      <p style="font-family:'Public Sans', Arial, sans-serif; font-size:25px; line-height:1.45; color:#c9c5ba">One article a day and telemetry-driven episodes, focused on a player first, then technology.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px; flex:1; padding:36px; background:#141619; border-top:6px solid #ff6000; border-radius:8px">
+      <h3 style="font-family:'Public Sans', Arial, sans-serif; font-size:32px; font-weight:700; color:#f2efe6">Marketing agents</h3>
+      <p style="font-family:'Public Sans', Arial, sans-serif; font-size:25px; line-height:1.45; color:#c9c5ba">Promote individual drivers, smaller teams and, most of all, the mid-tier field.</p>
+    </div>
+  </div>
+  <aside class="notes">Giving every competitor their time in the spotlight is a reason to keep racing, and to stay.</aside>
+</section>
+<section class="slide" id="godseye" data-transition="fade" style="background:#141619;color:#f2efe6;font-family:'Public Sans', Arial, sans-serif;padding:64px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<img src="media/godseye.jpg" alt="God's Eye View: 3D satellite globe over Loch Cluanie with the Assetto Corsa track, the real A87 and simulated traffic" style="position:absolute;left:128px;top:170px;width:941px;height:744px;object-fit:contain;background:#0d0e10;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<h2 style="font-family:Oswald, sans-serif;font-size:56px;font-weight:600;line-height:1.1">God's Eye View: sim tracks on the real world</h2>
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#ffce00">MPL · GOD'S EYE VIEW</p>
+</div>
+<div style="position:absolute;left:1101px;top:170px;width:691px;display:flex;flex-direction:column;gap:22px">
+<p style="font-size:28px;line-height:1.4"><b>A 3D satellite globe built into MPL, with every track placed where it really is.</b></p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Aligned to OpenStreetMap</b></span> · the AC track is matched to the real road and scored: at Loch Cluanie, scale 1.0017, 97% of the road snapped, p95 error 5.6 m</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Real vs modded</b></span> · the real A87 in solid line, the modder's road dashed, so you see what the mod changed</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Fly and follow</b></span> · fly to the road, follow your car, with traffic shown on the map (simulated until live AC data is available)</p>
+<p style="font-size:24px;line-height:1.45;color:#c9c5ba"><span style="color:#ffce00"><b>Layers and scenes</b></span> · data layers, scenes, CCTV, context and voice control on one screen</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8f8b82">God's Eye View in MPL · Loch Cluanie, Scotland · map by Cesium ion and Esri · 17</p>
+<aside class="notes">The same alignment check works for any track that follows a real road: it tells drivers and track builders how close a mod is to the real place.</aside>
+</section>
+<section class="slide" id="fit" data-transition="fade" style="background:#f2efe6;color:#17191c;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:Oswald, sans-serif;font-size:72px;font-weight:600;line-height:1.1">How it answers each problem</h2>
+<table style="width:1664px;font-size:30px;border-collapse:collapse">
+<tr><th style="text-align:left;padding:20px 24px;color:#7a766d;font-weight:600;border-bottom:2px solid #17191c;width:34%">Problem</th><th style="text-align:left;padding:20px 24px;color:#b84400;font-weight:700;border-bottom:2px solid #17191c;width:66%">What the platform brings</th></tr>
+<tr><td style="padding:20px 24px;font-weight:700;border-bottom:1px solid #d8d3c6">Drivers drift when a title fades</td><td style="padding:20px 24px;border-bottom:1px solid #d8d3c6">One home across every sim, so the community moves together, plus coaching that brings drivers back</td></tr>
+<tr><td style="padding:20px 24px;font-weight:700;border-bottom:1px solid #d8d3c6">No subscription worth keeping</td><td style="padding:20px 24px;border-bottom:1px solid #d8d3c6">Sub 6 from $0.99, liveries from $0.99, paid coaching and event fees on low-fee L2 payments</td></tr>
+<tr><td style="padding:20px 24px;font-weight:700;border-bottom:1px solid #d8d3c6">A community in pieces</td><td style="padding:20px 24px;border-bottom:1px solid #d8d3c6">Unified launcher, merged feed and chat, Livery Studio, open marketplace, Grid Radio</td></tr>
+<tr><td style="padding:20px 24px;font-weight:700">One rating, no rival</td><td style="padding:20px 24px">Open Driver Score across every sim, governed by open voting</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7a766d">L2 Sim-Racing Platform · 18</p>
+<aside class="notes">The four problems from slide 2, each matched to the building blocks that address it.</aside>
+</section>
+<section class="slide" id="why" data-transition="fade" style="background:#ffce00;color:#17191c;font-family:'Public Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:center;gap:40px">
+<p style="font-family:Oswald, sans-serif;font-size:28px;letter-spacing:4px;color:#5c4a00">WHY BACK IT</p>
+<p style="font-family:Oswald, sans-serif;font-size:52px;font-weight:500;line-height:1.25;width:1600px">The future infrastructure of sim racing is open, monetized and governed by an incorruptible voting system.</p>
+<p style="font-size:30px;line-height:1.5;width:1560px">An open telemetry hub, an open ranking system, an algorithm managed by the community and monetization of skill put power back into the hands of the players. Leagues, content creators and server hosts get a sophisticated tool for online competition across platforms.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5c4a00">Lukasz Gorycki · gorycki.lukasz@gmail.com · 19</p>
+<aside class="notes">From the announcement. Join the movement: stop staring at setup spreadsheets, focus on pure momentum.</aside>
+</section>
+    </div>
+    <div class="progress" id="progress"></div>
+  </div>
+  <div class="notesbox" id="notesbox" hidden></div>
+  <div class="bar">
+    <span class="name">L2 Sim-Racing Platform · Lukasz Gorycki</span>
+    <button type="button" id="prev" aria-label="Previous slide">&#8592; Prev</button>
+    <span class="count" id="count" aria-live="polite">1 / 19</span>
+    <button type="button" id="next" aria-label="Next slide">Next &#8594;</button>
+    <button type="button" id="notesBtn" aria-pressed="false">Notes</button>
+    <button type="button" id="fsBtn">Full screen</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var deck=document.getElementById('deck'), stage=document.getElementById('stage');
+  var count=document.getElementById('count'), prog=document.getElementById('progress');
+  var notesBox=document.getElementById('notesbox'), notesBtn=document.getElementById('notesBtn');
+  var i=0;
+  function fit(){
+    var w=stage.clientWidth, h=stage.clientHeight, s=Math.min(w/1920,h/1080);
+    deck.style.transform='scale('+s+') translate(-50%,-50%)';
+    deck.style.transformOrigin='0 0';
+    deck.style.left='50%'; deck.style.top='50%';
+    deck.style.transform='translate(-50%,-50%) scale('+s+')';
+    deck.style.transformOrigin='center center';
+  }
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach(function(s,k){
+      var on=k===i; s.classList.toggle('on',on); s.setAttribute('aria-hidden',on?'false':'true');
+      s.querySelectorAll('video').forEach(function(v){ if(on){ v.currentTime=0; var p=v.play(); if(p&&p.catch)p.catch(function(){}); } else v.pause(); });
+    });
+    count.textContent=(i+1)+' / '+slides.length;
+    prog.style.width=((i+1)/slides.length*100)+'%';
+    var a=slides[i].querySelector('.notes'); notesBox.textContent=a?a.textContent:'No notes for this slide.';
+    try{ history.replaceState(null,'','#'+(i+1)); }catch(e){}
+  }
+  document.getElementById('prev').onclick=function(){show(i-1)};
+  document.getElementById('next').onclick=function(){show(i+1)};
+  notesBtn.onclick=function(){ var on=notesBox.hidden; notesBox.hidden=!on; notesBtn.setAttribute('aria-pressed',on?'true':'false'); fit(); };
+  document.getElementById('fsBtn').onclick=function(){
+    var el=document.documentElement;
+    try{ if(document.fullscreenElement){document.exitFullscreen();} else if(el.requestFullscreen){ var p=el.requestFullscreen(); if(p&&p.catch)p.catch(function(){}); } }catch(e){}
+  };
+  document.addEventListener('keydown',function(e){
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '){e.preventDefault();show(i+1);}
+    else if(k==='ArrowLeft'||k==='PageUp'){e.preventDefault();show(i-1);}
+    else if(k==='Home'){show(0);} else if(k==='End'){show(slides.length-1);}
+    else if(k==='n'||k==='N'){notesBtn.click();} else if(k==='f'||k==='F'){document.getElementById('fsBtn').click();}
+  });
+  stage.addEventListener('click',function(e){
+    if(e.target.tagName==='VIDEO'){ var v=e.target; if(v.paused){v.play();}else{v.pause();} return; }
+    var r=stage.getBoundingClientRect(); show(e.clientX-r.left<r.width/3?i-1:i+1);
+  });
+  var x0=null;
+  stage.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  stage.addEventListener('touchend',function(e){ if(x0===null)return; var dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40)show(dx<0?i+1:i-1); x0=null; });
+  window.addEventListener('resize',fit);
+  document.addEventListener('fullscreenchange',fit);
+  fit();
+  var h=parseInt((location.hash||'').slice(1),10);
+  show(isNaN(h)?0:h-1);
+})();
+</script>
+
+</body>
+</html>
